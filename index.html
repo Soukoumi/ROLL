@@ -177,7 +177,8 @@
         display: flex;
         gap: 10px;
         align-items: center;
-        z-index: 5;
+        z-index: 100;
+        pointer-events: none;
       }
       .roll-area button {
         min-width: 120px;
@@ -835,22 +836,20 @@
     }
 
     function animateRoll(result, onDone) {
-      if (!rollDisplay) {
-        onDone();
-        return;
-      }
       const names = items.flatMap(i => rarities.map(r => `${r.name} ${i.name}`));
       const tierKey = currentSpeedTier();
       const speed = tierKey ? speedTiers[tierKey] : null;
       const duration = speed ? speed.anim : 1200;
       const tick = 80;
       let elapsed = 0;
-      rollDisplay.style.color = "#a5b4fc";
-      rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+      if (rollDisplay) {
+        rollDisplay.style.color = "#a5b4fc";
+        rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+      }
       clearInterval(rollInterval);
       rollInterval = setInterval(() => {
         elapsed += tick;
-        if (rollDisplay) {
+        if (rollDisplay && elapsed < duration) {
           rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
         }
         if (elapsed >= duration) {
@@ -860,47 +859,26 @@
             rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
             rollDisplay.style.color = tier.color;
           }
-          if (onDone) onDone();
+          onDone();
         }
       }, tick);
     }
 
       function doRoll() {
         if (rolling) return;
-        if (!rollBtn) return;
-        try {
-          rolling = true;
-          const item = pickItem();
-          const rarity = pickRarity();
-          currentRollResult = { item, rarity };
-          rollBtn.disabled = true;
-          animateRoll(currentRollResult, () => {
-            try {
-              addToCollection(currentRollResult);
-            } catch(e) {
-              console.error("Error adding to collection:", e);
-            }
-            rollBtn.disabled = false;
-            rolling = false;
-            currentRollResult = null;
-          });
-        } catch(e) {
-          console.error("Error in doRoll:", e);
-          rollBtn.disabled = false;
+        rolling = true;
+        const item = pickItem();
+        const rarity = pickRarity();
+        currentRollResult = { item, rarity };
+        if (rollBtn) rollBtn.disabled = true;
+        animateRoll(currentRollResult, () => {
+          addToCollection(currentRollResult);
+          if (rollBtn) rollBtn.disabled = false;
           rolling = false;
           currentRollResult = null;
-        }
+        });
       }
 
-      if (rollBtn) {
-        rollBtn.addEventListener('click', doRoll);
-      } else {
-        console.error("rollBtn not found!");
-        setTimeout(() => {
-          const btn = document.getElementById("rollBtn");
-          if (btn) btn.addEventListener('click', doRoll);
-        }, 100);
-      }
       skipBtn.onclick = () => {
         if (!rolling || !rollInterval || !currentRollResult) return;
         clearInterval(rollInterval);
@@ -1071,6 +1049,11 @@
     buyLuckBig.onclick = () => applyLuckPotion("big");
 
       // Départ
+      if (rollBtn) {
+        rollBtn.onclick = doRoll;
+        rollBtn.style.pointerEvents = 'auto';
+        rollBtn.style.cursor = 'pointer';
+      }
       recomputeCoinsPerSec();
     updateVariantFilters();
       renderCollection("Normal");
