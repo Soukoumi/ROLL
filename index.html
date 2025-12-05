@@ -64,14 +64,27 @@
         width: min(520px, 90vw);
         text-align: center;
         margin: 0 auto;
+        transition: transform 0.2s ease, filter 0.2s ease;
+      }
+      .roll-display.rolling {
+        animation: rollAnimation 0.1s infinite;
+        filter: blur(1px);
+        transform: scale(1.05);
       }
       .roll-display.flash {
         animation: flash 0.7s ease;
       }
+      @keyframes rollAnimation {
+        0% { transform: scale(1.05) rotate(0deg); filter: blur(1px); }
+        25% { transform: scale(1.08) rotate(1deg); filter: blur(1.5px); }
+        50% { transform: scale(1.05) rotate(0deg); filter: blur(1px); }
+        75% { transform: scale(1.08) rotate(-1deg); filter: blur(1.5px); }
+        100% { transform: scale(1.05) rotate(0deg); filter: blur(1px); }
+      }
       @keyframes flash {
-        0% { color: #fbbf24; }
-        50% { color: #22d3ee; }
-        100% { color: #a5b4fc; }
+        0% { color: #fbbf24; transform: scale(1.1); }
+        50% { color: #22d3ee; transform: scale(1.15); }
+        100% { color: #a5b4fc; transform: scale(1); }
       }
       .left-bar {
         position: fixed;
@@ -681,6 +694,7 @@
 
       let rolling = false;
       let rollInterval = null;
+      let currentRollResult = null;
 
     function currentSpeedTier() {
       const now = Date.now();
@@ -706,6 +720,7 @@
         const tick = 80;
         let elapsed = 0;
         rollDisplay.classList.remove("flash");
+      rollDisplay.classList.add("rolling");
       rollDisplay.style.color = "#a5b4fc";
         clearInterval(rollInterval);
         rollInterval = setInterval(() => {
@@ -713,6 +728,7 @@
           rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
           if (elapsed >= duration) {
             clearInterval(rollInterval);
+          rollDisplay.classList.remove("rolling");
           const tier = tierOf(result.item);
           rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
           rollDisplay.style.color = tier.color;
@@ -727,19 +743,31 @@
         rolling = true;
         const item = pickItem();
         const rarity = pickRarity();
-        const result = { item, rarity };
+        currentRollResult = { item, rarity };
         rollBtn.disabled = true;
-        animateRoll(result, () => {
-          addToCollection(result);
+        animateRoll(currentRollResult, () => {
+          addToCollection(currentRollResult);
           rollBtn.disabled = false;
           rolling = false;
+          currentRollResult = null;
         });
       }
 
       rollBtn.onclick = doRoll;
       skipBtn.onclick = () => {
-        // Placeholder : pourrait sauter l'animation si elle existait
-        logEl.textContent = "Skip utilisé (placeholder).";
+        if (!rolling || !rollInterval || !currentRollResult) return;
+        clearInterval(rollInterval);
+        rollDisplay.classList.remove("rolling");
+        const result = currentRollResult;
+        const tier = tierOf(result.item);
+        rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
+        rollDisplay.style.color = tier.color;
+        rollDisplay.classList.add("flash");
+        addToCollection(result);
+        rollBtn.disabled = false;
+        rolling = false;
+        currentRollResult = null;
+        logEl.textContent = "Skip utilisé.";
       };
 
       autoBtn.onclick = () => {
