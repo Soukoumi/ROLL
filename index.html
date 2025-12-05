@@ -406,10 +406,12 @@
         autoPurchased: false,
         skipPurchased: false,
         autoTimer: null,
-      buffSpeedUntil: 0,
-      buffLuckUntil: 0,
-      buffSpeedTier: null,
-      buffLuckTier: null
+      buffSpeedSmall: 0,
+      buffSpeedMid: 0,
+      buffSpeedBig: 0,
+      buffLuckSmall: 0,
+      buffLuckMid: 0,
+      buffLuckBig: 0
       };
 
       const gemsEl = document.getElementById("gems");
@@ -680,22 +682,20 @@
       let rolling = false;
       let rollInterval = null;
 
-    function isSpeedBuffActive() {
-      return Date.now() < state.buffSpeedUntil;
-    }
-
-    function isLuckBuffActive() {
-      return Date.now() < state.buffLuckUntil;
-    }
-
     function currentSpeedTier() {
-      if (!isSpeedBuffActive()) return null;
-      return state.buffSpeedTier || "small";
+      const now = Date.now();
+      if (now < state.buffSpeedBig) return "big";
+      if (now < state.buffSpeedMid) return "mid";
+      if (now < state.buffSpeedSmall) return "small";
+      return null;
     }
 
     function currentLuckTier() {
-      if (!isLuckBuffActive()) return null;
-      return state.buffLuckTier || "small";
+      const now = Date.now();
+      if (now < state.buffLuckBig) return "big";
+      if (now < state.buffLuckMid) return "mid";
+      if (now < state.buffLuckSmall) return "small";
+      return null;
     }
 
     function animateRoll(result, onDone) {
@@ -813,7 +813,6 @@
       });
 
     function addBuffBadge(key, label, untilTs) {
-      // Unique par key (speed / luck). Accumule la durée si même key.
       let div = Array.from(buffsEl.querySelectorAll(".buff")).find(b => b.dataset.key === key);
       if (!div) {
         div = document.createElement("div");
@@ -821,11 +820,7 @@
         div.dataset.key = key;
         buffsEl.appendChild(div);
       }
-      const currentUntil = Number(div.dataset.until) || 0;
-      const base = Math.max(currentUntil, Date.now());
-      const duration = untilTs - Date.now();
-      const newUntil = base + duration;
-      div.dataset.until = newUntil;
+      div.dataset.until = untilTs;
       div.dataset.label = label;
       div.textContent = label;
     }
@@ -868,16 +863,16 @@
       const tier = speedTiers[tierKey];
       if (!spendCoins(tier.price)) return;
       const now = Date.now();
-      const sameTier = state.buffSpeedTier === tierKey && isSpeedBuffActive();
-      const base = sameTier ? Math.max(state.buffSpeedUntil, now) : now;
-      state.buffSpeedTier = tierKey;
-      state.buffSpeedUntil = base + FIVE_MIN;
-      addBuffBadge("speed", tier.label, state.buffSpeedUntil);
-      logEl.textContent = `${tier.label} activée (cumulable sur la même potion, remplace les autres).`;
+      if (tierKey === "small") state.buffSpeedSmall = Math.max(state.buffSpeedSmall, now) + FIVE_MIN;
+      if (tierKey === "mid") state.buffSpeedMid = Math.max(state.buffSpeedMid, now) + FIVE_MIN;
+      if (tierKey === "big") state.buffSpeedBig = Math.max(state.buffSpeedBig, now) + FIVE_MIN;
+      const until = tierKey === "small" ? state.buffSpeedSmall : tierKey === "mid" ? state.buffSpeedMid : state.buffSpeedBig;
+      addBuffBadge(`speed-${tierKey}`, tier.label, until);
+      logEl.textContent = `${tier.label} activée (cumulable sur sa tier).`;
       if (state.autoTimer) {
         clearInterval(state.autoTimer);
-        const speed = speedTiers[state.buffSpeedTier];
-        const delay = speed ? speed.auto : 1400;
+        const active = speedTiers[currentSpeedTier()] || null;
+        const delay = active ? active.auto : 1400;
         state.autoTimer = setInterval(doRoll, delay);
       }
     }
@@ -886,12 +881,12 @@
       const tier = luckTiers[tierKey];
       if (!spendCoins(tier.price)) return;
       const now = Date.now();
-      const sameTier = state.buffLuckTier === tierKey && isLuckBuffActive();
-      const base = sameTier ? Math.max(state.buffLuckUntil, now) : now;
-      state.buffLuckTier = tierKey;
-      state.buffLuckUntil = base + FIVE_MIN;
-      addBuffBadge("luck", tier.label, state.buffLuckUntil);
-      logEl.textContent = `${tier.label} activée (cumulable sur la même potion, remplace les autres).`;
+      if (tierKey === "small") state.buffLuckSmall = Math.max(state.buffLuckSmall, now) + FIVE_MIN;
+      if (tierKey === "mid") state.buffLuckMid = Math.max(state.buffLuckMid, now) + FIVE_MIN;
+      if (tierKey === "big") state.buffLuckBig = Math.max(state.buffLuckBig, now) + FIVE_MIN;
+      const until = tierKey === "small" ? state.buffLuckSmall : tierKey === "mid" ? state.buffLuckMid : state.buffLuckBig;
+      addBuffBadge(`luck-${tierKey}`, tier.label, until);
+      logEl.textContent = `${tier.label} activée (cumulable sur sa tier).`;
     }
 
     buySpeed.onclick = () => applySpeedPotion("small");
