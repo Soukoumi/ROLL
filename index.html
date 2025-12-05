@@ -66,23 +66,15 @@
         margin: 0 auto;
       }
       .roll-display.rolling {
-        animation: rollAnimation 0.15s infinite;
-        filter: blur(1px);
+        opacity: 0.8;
       }
       .roll-display.flash {
-        animation: flash 0.7s ease;
-      }
-      @keyframes rollAnimation {
-        0% { transform: scale(1.02) rotate(0deg); filter: blur(1px); }
-        25% { transform: scale(1.05) rotate(1deg); filter: blur(1.5px); }
-        50% { transform: scale(1.02) rotate(0deg); filter: blur(1px); }
-        75% { transform: scale(1.05) rotate(-1deg); filter: blur(1.5px); }
-        100% { transform: scale(1.02) rotate(0deg); filter: blur(1px); }
+        animation: flash 0.5s ease;
       }
       @keyframes flash {
-        0% { color: #fbbf24; transform: scale(1.1); }
-        50% { color: #22d3ee; transform: scale(1.15); }
-        100% { color: #a5b4fc; transform: scale(1); }
+        0% { color: #fbbf24; }
+        50% { color: #22d3ee; }
+        100% { color: #a5b4fc; }
       }
       .left-bar {
         position: fixed;
