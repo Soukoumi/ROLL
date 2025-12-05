@@ -10,8 +10,9 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, sans-serif;
-      background: radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(16,185,129,0.08), transparent 35%), #0b1224;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
       color: #e2e8f0;
+      min-height: 100vh;
     }
       .top-wrap {
         position: fixed;
@@ -21,203 +22,325 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
-        padding: 10px 14px 14px;
-        background: #0f172a;
+        gap: 12px;
+        padding: 14px 16px 16px;
+        background: linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.98) 100%);
+        backdrop-filter: blur(10px);
+        border-bottom: 2px solid rgba(59,130,246,0.2);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         z-index: 2;
       }
       .top-row {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         flex-wrap: wrap;
+        width: 100%;
+        max-width: 1200px;
       }
       .best-wrap {
         flex: 1 1 auto;
         display: flex;
         justify-content: center;
         align-items: center;
-        gap: 8px;
-        font-weight: bold;
+        gap: 10px;
+        font-weight: 600;
+        font-size: 0.95em;
       }
       .best-name {
         color: #fbbf24;
+        text-shadow: 0 0 10px rgba(251,191,36,0.5);
+        font-weight: 700;
       }
       .counters {
         display: flex;
-        gap: 10px;
+        gap: 16px;
         margin-left: auto;
-        font-weight: bold;
+        font-weight: 600;
         text-align: right;
+        font-size: 0.95em;
+      }
+      .counters .gems {
+        background: linear-gradient(135deg, rgba(37,99,235,0.15) 0%, rgba(59,130,246,0.1) 100%);
+        padding: 6px 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(59,130,246,0.3);
       }
       .roll-display {
-        min-height: 34px;
+        min-height: 42px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 8px 12px;
-        border-radius: 10px;
-        background: #111827;
-        box-shadow: 0 0 0 1px #1f2937 inset;
+        padding: 12px 20px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 2px solid rgba(165,180,252,0.3);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
         color: #a5b4fc;
-        font-weight: bold;
-        width: min(520px, 90vw);
+        font-weight: 700;
+        font-size: 1.1em;
+        width: min(600px, 90vw);
         text-align: center;
         margin: 0 auto;
-      }
-      .roll-display.rolling {
-        opacity: 0.8;
-      }
-      .roll-display.flash {
-        animation: flash 0.5s ease;
-      }
-      @keyframes flash {
-        0% { color: #fbbf24; }
-        50% { color: #22d3ee; }
-        100% { color: #a5b4fc; }
+        letter-spacing: 0.5px;
       }
       .left-bar {
         position: fixed;
-        top: 100px; /* sous le header */
-        left: 12px;
+        top: 110px;
+        left: 16px;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
         z-index: 3;
       }
+      .left-bar > button:first-child {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        box-shadow: 0 4px 12px rgba(139,92,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+        border-color: rgba(139,92,246,0.5);
+      }
+      .left-bar > button:first-child:hover {
+        background: linear-gradient(135deg, #9d6ff7 0%, #8b5cf6 100%);
+        box-shadow: 0 6px 20px rgba(139,92,246,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+      }
       button {
-        padding: 10px 14px;
+        padding: 12px 20px;
         border: none;
-        border-radius: 8px;
-        font-weight: bold;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95em;
         cursor: pointer;
-        background: #2563eb;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         color: white;
-      transition: transform 0.1s ease, box-shadow 0.15s ease;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+        transition: all 0.2s ease;
+        border: 1px solid rgba(59,130,246,0.5);
       }
       button:disabled {
-        background: #475569;
+        background: linear-gradient(135deg, #475569 0%, #334155 100%);
         cursor: not-allowed;
+        opacity: 0.6;
+        box-shadow: none;
+        border-color: rgba(71,85,105,0.3);
       }
     button:not(:disabled):hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+      background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+    }
+    button:not(:disabled):active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(37,99,235,0.4);
     }
     .shop {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      margin-top: 8px;
+      gap: 8px;
+      margin-top: 12px;
+      background: rgba(15,23,42,0.6);
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(59,130,246,0.2);
+    }
+    .shop > div:first-child {
+      font-weight: 700;
+      font-size: 1em;
+      color: #fbbf24;
+      margin-bottom: 4px;
+      text-shadow: 0 0 8px rgba(251,191,36,0.3);
     }
     .shop button {
-      padding: 6px 10px;
-      font-size: 0.9em;
+      padding: 8px 12px;
+      font-size: 0.88em;
+      width: 100%;
     }
       .log {
         position: fixed;
-        bottom: 90px;
+        bottom: 100px;
         left: 50%;
         transform: translateX(-50%);
-        background: #1f2937;
-        padding: 10px 14px;
-        border-radius: 8px;
-        min-width: 280px;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 12px 18px;
+        border-radius: 12px;
+        min-width: 320px;
+        max-width: 90vw;
         text-align: center;
+        border: 2px solid rgba(59,130,246,0.3);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        font-weight: 500;
+        font-size: 0.95em;
       }
       .roll-area {
         position: fixed;
-        bottom: 16px;
+        bottom: 20px;
         left: 50%;
         transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .roll-area button {
+        min-width: 120px;
       }
       .panel {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.65);
+        background: rgba(0, 0, 0, 0.75);
+        backdrop-filter: blur(4px);
         display: none;
         align-items: center;
         justify-content: center;
-      z-index: 10;
+        z-index: 10;
       }
       .panel .content {
-        background: #111827;
-        padding: 20px;
-        border-radius: 10px;
-        min-width: 320px;
-        max-width: 760px;
-      max-height: 80vh;
-      overflow: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 24px;
+        border-radius: 16px;
+        min-width: 360px;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow: auto;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1);
+        border: 2px solid rgba(59,130,246,0.3);
+      }
+      .panel .content h3 {
+        color: #fbbf24;
+        text-shadow: 0 0 10px rgba(251,191,36,0.3);
+        font-size: 1.4em;
+        margin: 0 0 16px 0;
       }
       .buffs {
         position: fixed;
-        right: 16px;
-        bottom: 16px;
+        right: 20px;
+        bottom: 20px;
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
         align-items: flex-end;
         z-index: 4;
       }
       .buff {
-        background: #1f2937;
-        border: 1px solid #334155;
-        padding: 8px 10px;
-        border-radius: 8px;
-        font-weight: bold;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 2px solid rgba(59,130,246,0.4);
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 600;
         color: #e2e8f0;
-        min-width: 180px;
+        min-width: 200px;
         text-align: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        font-size: 0.9em;
       }
       .collection-list {
-        margin-top: 10px;
+        margin-top: 12px;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
+        gap: 12px;
         align-items: start;
-      max-height: 60vh;
-      overflow-y: auto;
-      padding-right: 6px;
+        max-height: 65vh;
+        overflow-y: auto;
+        padding-right: 8px;
+      }
+      .collection-list::-webkit-scrollbar {
+        width: 8px;
+      }
+      .collection-list::-webkit-scrollbar-track {
+        background: rgba(15,23,42,0.5);
+        border-radius: 4px;
+      }
+      .collection-list::-webkit-scrollbar-thumb {
+        background: rgba(59,130,246,0.5);
+        border-radius: 4px;
+      }
+      .collection-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(59,130,246,0.7);
       }
       .item-row {
         display: flex;
         flex-direction: column;
-        background: #1f2937;
-        padding: 8px 10px;
-        border-radius: 8px;
-        min-height: 120px;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        padding: 12px;
+        border-radius: 12px;
+        min-height: 140px;
+        border: 1px solid rgba(59,130,246,0.2);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+        transition: all 0.2s ease;
+      }
+      .item-row:hover {
+        border-color: rgba(59,130,246,0.4);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        transform: translateY(-2px);
+      }
+      .item-row strong {
+        font-size: 1.05em;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: #e2e8f0;
       }
       .item-row span.chance {
         color: #a5b4fc;
-        font-size: 0.9em;
+        font-size: 0.88em;
+        margin-top: 4px;
+        opacity: 0.9;
       }
       .variant-buttons {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 6px;
+        gap: 8px;
+        margin-top: 8px;
       }
       .variant-buttons button {
-        padding: 6px 8px;
+        padding: 6px 10px;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-weight: 600;
-        font-size: 0.9em;
+        font-size: 0.85em;
         cursor: pointer;
         color: #0f172a;
         background: #e2e8f0;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        transition: all 0.15s ease;
+      }
+      .variant-buttons button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       }
     .tier-badge {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 2px 6px;
+      padding: 4px 8px;
       border-radius: 6px;
-      font-size: 0.82em;
+      font-size: 0.8em;
       font-weight: 700;
       color: #0b1224;
-      background: #e2e8f0;
+      background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      margin-top: 4px;
+    }
+    .potion-section {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid rgba(59,130,246,0.3);
+    }
+    .potion-section-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 0.95em;
+      color: #fbbf24;
+      text-shadow: 0 0 8px rgba(251,191,36,0.3);
+    }
+    .variant-filter {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: #e2e8f0;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      transition: all 0.2s ease;
+    }
+    .variant-filter:hover {
+      background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+      border-color: rgba(59,130,246,0.5);
+      transform: translateX(2px);
     }
     </style>
   </head>
@@ -227,7 +350,7 @@
         <div class="best-wrap">
           <span>Plus fort obtenu:</span>
           <span class="best-name" id="bestItem">—</span>
-          <button id="equipBest" style="padding:8px 10px;">Équip best</button>
+          <button id="equipBest" style="padding:8px 14px; font-size:0.85em;">Équip best</button>
         </div>
         <div class="counters">
           <div class="gems">Gems: <span id="gems">0</span></div>
@@ -243,25 +366,25 @@
       <div>Boutique</div>
       <button id="buyAuto" disabled>Acheter Auto Roll (100)</button>
       <button id="buySkip" disabled>Acheter Skip Roll (500)</button>
-      <div style="margin-top:8px; padding-top:8px; border-top:1px solid #334155;">
-        <div style="font-weight:bold; margin-bottom:4px; font-size:0.9em;">Potions Base</div>
+      <div class="potion-section">
+        <div class="potion-section-title">Potions Base</div>
         <button id="buySpeed" disabled>Potion Speed 5m (5000 pièces)</button>
         <button id="buyLuck" disabled>Potion Chance 5m (5000 pièces)</button>
       </div>
-      <div style="margin-top:8px; padding-top:8px; border-top:1px solid #334155;">
-        <div style="font-weight:bold; margin-bottom:4px; font-size:0.9em;">Potions Moyennes</div>
+      <div class="potion-section">
+        <div class="potion-section-title">Potions Moyennes</div>
         <button id="buySpeedMid" disabled>Potion Speed Moyenne 5m (12000 pièces)</button>
         <button id="buyLuckMid" disabled>Potion Chance Moyenne 5m (12000 pièces)</button>
       </div>
-      <div style="margin-top:8px; padding-top:8px; border-top:1px solid #334155;">
-        <div style="font-weight:bold; margin-bottom:4px; font-size:0.9em;">Potions Grandes</div>
+      <div class="potion-section">
+        <div class="potion-section-title">Potions Grandes</div>
         <button id="buySpeedBig" disabled>Potion Speed Grande 5m (25000 pièces)</button>
         <button id="buyLuckBig" disabled>Potion Chance Grande 5m (25000 pièces)</button>
       </div>
     </div>
   </div>
 
-    <div class="log" id="log" style="margin-top:70px;">Prêt à roll.</div>
+    <div class="log" id="log">Prêt à roll.</div>
 
     <div class="roll-area">
       <button id="rollBtn">Roll</button>
@@ -645,8 +768,6 @@
       const tier = tierOf(result.item);
       const label = `${result.rarity.name} ${result.item.name} [${tier.label}]`;
       logEl.textContent = `Tu as obtenu: ${label}!` + (firstTime ? " (Nouveau +10 gems)" : "");
-        rollDisplay.classList.add("flash");
-        setTimeout(() => rollDisplay.classList.remove("flash"), 750);
       }
 
       function renderCollection(filter = state.currentVariantFilter || "Normal") {
@@ -719,8 +840,6 @@
       const duration = speed ? speed.anim : 1200;
       const tick = 80;
       let elapsed = 0;
-      rollDisplay.classList.remove("flash");
-      rollDisplay.classList.add("rolling");
       rollDisplay.style.color = "#a5b4fc";
       rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
       clearInterval(rollInterval);
@@ -729,11 +848,9 @@
         rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
         if (elapsed >= duration) {
           clearInterval(rollInterval);
-          rollDisplay.classList.remove("rolling");
           const tier = tierOf(result.item);
           rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
           rollDisplay.style.color = tier.color;
-          rollDisplay.classList.add("flash");
           onDone();
         }
       }, tick);
@@ -758,12 +875,10 @@
       skipBtn.onclick = () => {
         if (!rolling || !rollInterval || !currentRollResult) return;
         clearInterval(rollInterval);
-        rollDisplay.classList.remove("rolling");
         const result = currentRollResult;
         const tier = tierOf(result.item);
         rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
         rollDisplay.style.color = tier.color;
-        rollDisplay.classList.add("flash");
         addToCollection(result);
         rollBtn.disabled = false;
         rolling = false;
