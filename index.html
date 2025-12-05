@@ -64,22 +64,20 @@
         width: min(520px, 90vw);
         text-align: center;
         margin: 0 auto;
-        transition: transform 0.2s ease, filter 0.2s ease;
       }
       .roll-display.rolling {
-        animation: rollAnimation 0.1s infinite;
+        animation: rollAnimation 0.15s infinite;
         filter: blur(1px);
-        transform: scale(1.05);
       }
       .roll-display.flash {
         animation: flash 0.7s ease;
       }
       @keyframes rollAnimation {
-        0% { transform: scale(1.05) rotate(0deg); filter: blur(1px); }
-        25% { transform: scale(1.08) rotate(1deg); filter: blur(1.5px); }
-        50% { transform: scale(1.05) rotate(0deg); filter: blur(1px); }
-        75% { transform: scale(1.08) rotate(-1deg); filter: blur(1.5px); }
-        100% { transform: scale(1.05) rotate(0deg); filter: blur(1px); }
+        0% { transform: scale(1.02) rotate(0deg); filter: blur(1px); }
+        25% { transform: scale(1.05) rotate(1deg); filter: blur(1.5px); }
+        50% { transform: scale(1.02) rotate(0deg); filter: blur(1px); }
+        75% { transform: scale(1.05) rotate(-1deg); filter: blur(1.5px); }
+        100% { transform: scale(1.02) rotate(0deg); filter: blur(1px); }
       }
       @keyframes flash {
         0% { color: #fbbf24; transform: scale(1.1); }
@@ -722,30 +720,32 @@
     }
 
     function animateRoll(result, onDone) {
+      if (!rollDisplay) return;
       const names = items.flatMap(i => rarities.map(r => `${r.name} ${i.name}`));
       const tierKey = currentSpeedTier();
       const speed = tierKey ? speedTiers[tierKey] : null;
       const duration = speed ? speed.anim : 1200;
-        const tick = 80;
-        let elapsed = 0;
-        rollDisplay.classList.remove("flash");
+      const tick = 80;
+      let elapsed = 0;
+      rollDisplay.classList.remove("flash");
       rollDisplay.classList.add("rolling");
       rollDisplay.style.color = "#a5b4fc";
-        clearInterval(rollInterval);
-        rollInterval = setInterval(() => {
-          elapsed += tick;
-          rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
-          if (elapsed >= duration) {
-            clearInterval(rollInterval);
+      rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+      clearInterval(rollInterval);
+      rollInterval = setInterval(() => {
+        elapsed += tick;
+        rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+        if (elapsed >= duration) {
+          clearInterval(rollInterval);
           rollDisplay.classList.remove("rolling");
           const tier = tierOf(result.item);
           rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
           rollDisplay.style.color = tier.color;
-            rollDisplay.classList.add("flash");
-            onDone();
-          }
-        }, tick);
-      }
+          rollDisplay.classList.add("flash");
+          onDone();
+        }
+      }, tick);
+    }
 
       function doRoll() {
         if (rolling) return;
