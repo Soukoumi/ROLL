@@ -1,0 +1,913 @@
+  <!DOCTYPE html>
+  <html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mini Roll & Collection</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(59,130,246,0.08), transparent 35%), radial-gradient(circle at 80% 0%, rgba(16,185,129,0.08), transparent 35%), #0b1224;
+      color: #e2e8f0;
+    }
+      .top-wrap {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px 14px;
+        background: #0f172a;
+        z-index: 2;
+      }
+      .top-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .best-wrap {
+        flex: 1 1 auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        font-weight: bold;
+      }
+      .best-name {
+        color: #fbbf24;
+      }
+      .counters {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+        font-weight: bold;
+        text-align: right;
+      }
+      .roll-display {
+        min-height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border-radius: 10px;
+        background: #111827;
+        box-shadow: 0 0 0 1px #1f2937 inset;
+        color: #a5b4fc;
+        font-weight: bold;
+        width: min(520px, 90vw);
+        text-align: center;
+        margin: 0 auto;
+      }
+      .roll-display.flash {
+        animation: flash 0.7s ease;
+      }
+      @keyframes flash {
+        0% { color: #fbbf24; }
+        50% { color: #22d3ee; }
+        100% { color: #a5b4fc; }
+      }
+      .left-bar {
+        position: fixed;
+        top: 100px; /* sous le header */
+        left: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 3;
+      }
+      button {
+        padding: 10px 14px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        background: #2563eb;
+        color: white;
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+      }
+      button:disabled {
+        background: #475569;
+        cursor: not-allowed;
+      }
+    button:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+    }
+    .shop {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .shop button {
+      padding: 6px 10px;
+      font-size: 0.9em;
+    }
+      .log {
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1f2937;
+        padding: 10px 14px;
+        border-radius: 8px;
+        min-width: 280px;
+        text-align: center;
+      }
+      .roll-area {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .panel {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        display: none;
+        align-items: center;
+        justify-content: center;
+      z-index: 10;
+      }
+      .panel .content {
+        background: #111827;
+        padding: 20px;
+        border-radius: 10px;
+        min-width: 320px;
+        max-width: 760px;
+      max-height: 80vh;
+      overflow: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+      }
+      .buffs {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
+        z-index: 4;
+      }
+      .buff {
+        background: #1f2937;
+        border: 1px solid #334155;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-weight: bold;
+        color: #e2e8f0;
+        min-width: 180px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      }
+      .collection-list {
+        margin-top: 10px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        align-items: start;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 6px;
+      }
+      .item-row {
+        display: flex;
+        flex-direction: column;
+        background: #1f2937;
+        padding: 8px 10px;
+        border-radius: 8px;
+        min-height: 120px;
+      }
+      .item-row span.chance {
+        color: #a5b4fc;
+        font-size: 0.9em;
+      }
+      .variant-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 6px;
+      }
+      .variant-buttons button {
+        padding: 6px 8px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9em;
+        cursor: pointer;
+        color: #0f172a;
+        background: #e2e8f0;
+      }
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.82em;
+      font-weight: 700;
+      color: #0b1224;
+      background: #e2e8f0;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="top-wrap">
+      <div class="top-row">
+        <div class="best-wrap">
+          <span>Plus fort obtenu:</span>
+          <span class="best-name" id="bestItem">—</span>
+          <button id="equipBest" style="padding:8px 10px;">Équip best</button>
+        </div>
+        <div class="counters">
+          <div class="gems">Gems: <span id="gems">0</span></div>
+          <div class="gems">Pièces: <span id="coins">0</span> (<span id="cps">0</span>/s)</div>
+        </div>
+      </div>
+      <div class="roll-display" id="rollDisplay">Prêt à rouler...</div>
+    </div>
+
+  <div class="left-bar">
+    <button id="btnCollection">Collection</button>
+    <div class="shop">
+      <div>Boutique</div>
+      <button id="buyAuto" disabled>Acheter Auto Roll (100)</button>
+      <button id="buySkip" disabled>Acheter Skip Roll (500)</button>
+      <button id="buySpeed" disabled>Potion Speed 5m (5000 pièces)</button>
+      <button id="buyLuck" disabled>Potion Chance 5m (5000 pièces)</button>
+      <button id="buySpeedMid" disabled>Potion Speed Moyenne 5m (12000 pièces)</button>
+      <button id="buySpeedBig" disabled>Potion Speed Grande 5m (25000 pièces)</button>
+      <button id="buyLuckMid" disabled>Potion Chance Moyenne 5m (12000 pièces)</button>
+      <button id="buyLuckBig" disabled>Potion Chance Grande 5m (25000 pièces)</button>
+    </div>
+  </div>
+
+    <div class="log" id="log" style="margin-top:70px;">Prêt à roll.</div>
+
+    <div class="roll-area">
+      <button id="rollBtn">Roll</button>
+      <button id="skipBtn" disabled style="margin-left:6px;">Skip</button>
+      <button id="autoBtn" disabled style="margin-left:6px;">Auto Roll</button>
+    </div>
+
+    <div class="panel" id="collectionPanel">
+      <div class="content">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+          <h3 style="margin:0;">Collection</h3>
+          <button id="closeCollection">Fermer</button>
+        </div>
+        <div style="display:flex; gap:12px; margin-top:10px;">
+          <div style="display:flex; flex-direction:column; gap:6px; min-width:130px;">
+            <strong>Variantes</strong>
+            <button class="variant-filter" data-variant="Normal">Normal</button>
+            <button class="variant-filter" data-variant="Bronze">Bronze</button>
+            <button class="variant-filter" data-variant="Silver">Silver</button>
+            <button class="variant-filter" data-variant="Or">Or</button>
+            <button class="variant-filter" data-variant="Diamant">Diamant</button>
+            <button class="variant-filter" data-variant="Emeraude">Emeraude</button>
+            <button class="variant-filter" data-variant="Arc en ciel">Arc en ciel</button>
+          </div>
+          <div class="collection-list" id="collectionList" style="flex:1;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="buffs" id="buffs"></div>
+
+    <script>
+    const items = [
+      { name: "Caca", chanceDivisor: 2 },
+      { name: "Pipi", chanceDivisor: 5 },
+      { name: "Gros calibre", chanceDivisor: 20 },
+      { name: "Étron", chanceDivisor: 50 },
+      { name: "Giga bouse", chanceDivisor: 60 },
+      { name: "Mega caca", chanceDivisor: 80 },
+      { name: "Super pipi", chanceDivisor: 90 },
+      { name: "Bouse royale", chanceDivisor: 110 },
+      { name: "Fumet", chanceDivisor: 130 },
+      { name: "Gadoue", chanceDivisor: 150 },
+      { name: "Boue d'or", chanceDivisor: 170 },
+      { name: "Tronçon", chanceDivisor: 190 },
+      { name: "Goudron", chanceDivisor: 210 },
+      { name: "Magma", chanceDivisor: 230 },
+      { name: "Lave", chanceDivisor: 250 },
+      { name: "Brume", chanceDivisor: 270 },
+      { name: "Tempête", chanceDivisor: 290 },
+      { name: "Tourbillon", chanceDivisor: 310 },
+      { name: "Ouragan", chanceDivisor: 340 },
+      { name: "Cataclysme", chanceDivisor: 400 },
+      // Nouveaux
+      { name: "Pluie acide", chanceDivisor: 420 },
+      { name: "Cendre froide", chanceDivisor: 440 },
+      { name: "Souffle", chanceDivisor: 460 },
+      { name: "Tornade", chanceDivisor: 480 },
+      { name: "Cyclone", chanceDivisor: 500 },
+      { name: "Vacarme", chanceDivisor: 520 },
+      { name: "Sismique", chanceDivisor: 540 },
+      { name: "Cramoisi", chanceDivisor: 560 },
+      { name: "Nocturne", chanceDivisor: 580 },
+      { name: "Spectre", chanceDivisor: 600 },
+      { name: "Nébuleuse", chanceDivisor: 620 },
+      { name: "Comète", chanceDivisor: 640 },
+      { name: "Supernova", chanceDivisor: 660 },
+      { name: "Singularité", chanceDivisor: 690 },
+      { name: "Antimatière", chanceDivisor: 720 },
+      { name: "Entropie", chanceDivisor: 750 },
+      { name: "Abysse", chanceDivisor: 780 },
+      { name: "Zénith", chanceDivisor: 810 },
+      { name: "Crépuscule", chanceDivisor: 840 },
+      { name: "Eclipse", chanceDivisor: 880 },
+      // 60 nouveaux pour atteindre 100
+      { name: "Aurore", chanceDivisor: 900 },
+      { name: "Rayon", chanceDivisor: 920 },
+      { name: "Halo", chanceDivisor: 940 },
+      { name: "Mirage", chanceDivisor: 960 },
+      { name: "Illusion", chanceDivisor: 980 },
+      { name: "Prisme", chanceDivisor: 1000 },
+      { name: "Lueur", chanceDivisor: 1020 },
+      { name: "Flamboiement", chanceDivisor: 1040 },
+      { name: "Brasier", chanceDivisor: 1060 },
+      { name: "Phoenix", chanceDivisor: 1080 },
+      { name: "Infernale", chanceDivisor: 1100 },
+      { name: "Tempête solaire", chanceDivisor: 1120 },
+      { name: "Voile", chanceDivisor: 1140 },
+      { name: "Eclipse rouge", chanceDivisor: 1160 },
+      { name: "Gravité", chanceDivisor: 1180 },
+      { name: "Orbe", chanceDivisor: 1200 },
+      { name: "Pulsar", chanceDivisor: 1220 },
+      { name: "Quasar", chanceDivisor: 1240 },
+      { name: "Horizon", chanceDivisor: 1260 },
+      { name: "Horizon noir", chanceDivisor: 1280 },
+      { name: "Rayon gamma", chanceDivisor: 1300 },
+      { name: "Proton", chanceDivisor: 1320 },
+      { name: "Neutrino", chanceDivisor: 1340 },
+      { name: "Photon", chanceDivisor: 1360 },
+      { name: "Plasma", chanceDivisor: 1380 },
+      { name: "Couronne", chanceDivisor: 1400 },
+      { name: "Néon", chanceDivisor: 1420 },
+      { name: "Cryo", chanceDivisor: 1440 },
+      { name: "Ombre", chanceDivisor: 1460 },
+      { name: "Limbus", chanceDivisor: 1480 },
+      { name: "Ethere", chanceDivisor: 1500 },
+      { name: "Astral", chanceDivisor: 1520 },
+      { name: "Celeste", chanceDivisor: 1540 },
+      { name: "Arcanique", chanceDivisor: 1560 },
+      { name: "Runique", chanceDivisor: 1580 },
+      { name: "Relique", chanceDivisor: 1600 },
+      { name: "Sanctuaire", chanceDivisor: 1620 },
+      { name: "Oracle", chanceDivisor: 1640 },
+      { name: "Prophète", chanceDivisor: 1660 },
+      { name: "Avatar", chanceDivisor: 1680 },
+      { name: "Titan", chanceDivisor: 1700 },
+      { name: "Colosse", chanceDivisor: 1720 },
+      { name: "Mythique", chanceDivisor: 1740 },
+      { name: "Chimère", chanceDivisor: 1760 },
+      { name: "Leviathan", chanceDivisor: 1780 },
+      { name: "Behemoth", chanceDivisor: 1800 },
+      { name: "Dragon", chanceDivisor: 1820 },
+      { name: "Empyrée", chanceDivisor: 1840 },
+      { name: "Séraphin", chanceDivisor: 1860 },
+      { name: "Archange", chanceDivisor: 1880 },
+      { name: "Divinité", chanceDivisor: 1900 },
+      { name: "Panthéon", chanceDivisor: 1920 },
+      { name: "Omniscience", chanceDivisor: 1940 },
+      { name: "Omnipotent", chanceDivisor: 1960 },
+      { name: "Alpha", chanceDivisor: 1980 },
+      { name: "Omega", chanceDivisor: 2000 },
+      { name: "Singularis", chanceDivisor: 2020 },
+      { name: "Chronos", chanceDivisor: 2040 },
+      { name: "Kairos", chanceDivisor: 2060 },
+      { name: "Originel", chanceDivisor: 2080 }
+    ];
+
+      const rarities = [
+        { name: "Normal", weight: 50, color: "#e2e8f0", power: 0 },
+        { name: "Bronze", weight: 40, color: "#f97316", power: 1 },
+        { name: "Silver", weight: 25, color: "#cbd5e1", power: 2 },
+        { name: "Or", weight: 15, color: "#facc15", power: 3 },
+        { name: "Diamant", weight: 10, color: "#67e8f9", power: 4 },
+        { name: "Emeraude", weight: 6, color: "#34d399", power: 5 },
+        { name: "Arc en ciel", weight: 4, color: "#a855f7", power: 6 }
+      ];
+
+      const state = {
+        gems: 0,
+        coins: 0,
+        coinsPerSec: 0,
+        collection: {}, // name -> count obtenu
+        autoPurchased: false,
+        skipPurchased: false,
+        autoTimer: null,
+      buffSpeedUntil: 0,
+      buffLuckUntil: 0,
+      buffSpeedTier: null,
+      buffLuckTier: null
+      };
+
+      const gemsEl = document.getElementById("gems");
+      const coinsEl = document.getElementById("coins");
+      const cpsEl = document.getElementById("cps");
+      const bestEl = document.getElementById("bestItem");
+      const rollDisplay = document.getElementById("rollDisplay");
+      const logEl = document.getElementById("log");
+      const rollBtn = document.getElementById("rollBtn");
+      const skipBtn = document.getElementById("skipBtn");
+      const autoBtn = document.getElementById("autoBtn");
+      const buyAuto = document.getElementById("buyAuto");
+      const buySkip = document.getElementById("buySkip");
+      const buySpeed = document.getElementById("buySpeed");
+      const buyLuck = document.getElementById("buyLuck");
+    const buySpeedMid = document.getElementById("buySpeedMid");
+    const buySpeedBig = document.getElementById("buySpeedBig");
+    const buyLuckMid = document.getElementById("buyLuckMid");
+    const buyLuckBig = document.getElementById("buyLuckBig");
+    const collectionList = document.getElementById("collectionList");
+    const collectionPanel = document.getElementById("collectionPanel");
+    const buffsEl = document.getElementById("buffs");
+
+      // Initialiser la boutique comme visible (mais achat conditionné aux gems)
+      buyAuto.disabled = false;
+      buySkip.disabled = false;
+
+      function normalizedPercentages() {
+        const weights = items.map(i => 1 / i.chanceDivisor);
+        const total = weights.reduce((a, b) => a + b, 0);
+        return items.map((item, idx) => ({
+          name: item.name,
+          pct: (weights[idx] / total) * 100
+        }));
+      }
+
+      function normalizedVariantPercentages() {
+        const total = rarities.reduce((a, b) => a + b.weight, 0);
+        return rarities.map(r => ({
+          name: r.name,
+          pct: (r.weight / total) * 100
+        }));
+      }
+
+      const rarityPay = {
+        "Normal": 1,
+        "Bronze": 2,
+        "Silver": 4,
+        "Or": 8,
+        "Diamant": 15,
+        "Emeraude": 25,
+        "Arc en ciel": 40
+      };
+
+    const speedTiers = {
+      small: { label: "Speed Roll", anim: 800, auto: 900, price: 5000 },
+      mid: { label: "Speed Moyenne", anim: 650, auto: 750, price: 12000 },
+      big: { label: "Speed Grande", anim: 500, auto: 600, price: 25000 }
+    };
+
+    const luckTiers = {
+      small: { label: "Chance", norm: 0.8, other: 1.3, price: 5000 },
+      mid: { label: "Chance Moyenne", norm: 0.6, other: 1.5, price: 12000 },
+      big: { label: "Chance Grande", norm: 0.4, other: 1.8, price: 25000 }
+    };
+
+      function rateFor(item, rarity) {
+        const base = rarityPay[rarity.name] || (1 + (rarity.power || 0));
+        const itemFactor = 1 + item.chanceDivisor / 10; // plus rare l'item, plus ça paye
+        return Math.round(base * itemFactor);
+      }
+
+    function tierOf(item) {
+      const d = item.chanceDivisor;
+      if (d <= 10) return { label: "Commune", color: "#cbd5e1" };
+      if (d <= 80) return { label: "Rare", color: "#60a5fa" };
+      if (d <= 180) return { label: "Epic", color: "#a855f7" };
+      if (d <= 320) return { label: "Légendaire", color: "#f97316" };
+      if (d <= 600) return { label: "Unique", color: "#fbbf24" };
+      if (d <= 1200) return { label: "Mystique", color: "#22d3ee" };
+      if (d <= 1800) return { label: "Univers", color: "#6366f1" };
+      if (d <= 2200) return { label: "Dieu", color: "#f59e0b" };
+      return { label: "Divine", color: "#f472b6" };
+    }
+
+      function recomputeCoinsPerSec() {
+        // Ne garder que le meilleur couple (item, variante) global
+        let best = 0;
+        items.forEach(it => {
+          rarities.forEach(r => {
+            const key = `${it.name}__${r.name}`;
+            const owned = state.collection[key] || 0;
+            if (owned > 0) {
+              const rate = rateFor(it, r);
+              if (rate > best) best = rate;
+            }
+          });
+        });
+        best = Math.round(best);
+        state.coinsPerSec = best;
+        cpsEl.textContent = best.toFixed(0);
+        updateCoinsDisplay();
+      }
+
+    function variantUnlockCounts() {
+      const totalItems = items.length;
+      const map = {};
+      rarities.forEach(r => {
+        let unlocked = 0;
+        items.forEach(it => {
+          const key = `${it.name}__${r.name}`;
+          if ((state.collection[key] || 0) > 0) unlocked++;
+        });
+        map[r.name] = { unlocked, total: totalItems };
+      });
+      return map;
+    }
+
+    function updateVariantFilters() {
+      const counts = variantUnlockCounts();
+      document.querySelectorAll(".variant-filter").forEach(btn => {
+        const variant = btn.getAttribute("data-variant");
+        const info = counts[variant];
+        const lock = info && info.unlocked > 0 ? "🔓" : "🔒";
+        btn.textContent = `${lock} ${variant} ${info ? `${info.unlocked}/${info.total}` : ""}`;
+      });
+    }
+
+      function startCoinsTick() {
+        setInterval(() => {
+          state.coins += state.coinsPerSec;
+          updateCoinsDisplay();
+        }, 1000);
+      }
+
+      function updateGems(delta) {
+        state.gems += delta;
+        gemsEl.textContent = state.gems;
+        buyAuto.disabled = state.gems < 100 || state.autoPurchased;
+        buySkip.disabled = state.gems < 500 || state.skipPurchased;
+      buySpeed.disabled = state.coins < speedTiers.small.price;
+      buyLuck.disabled = state.coins < luckTiers.small.price;
+      buySpeedMid.disabled = state.coins < speedTiers.mid.price;
+      buySpeedBig.disabled = state.coins < speedTiers.big.price;
+      buyLuckMid.disabled = state.coins < luckTiers.mid.price;
+      buyLuckBig.disabled = state.coins < luckTiers.big.price;
+      }
+
+      function updateCoinsDisplay() {
+        coinsEl.textContent = state.coins.toFixed(0);
+        cpsEl.textContent = state.coinsPerSec.toFixed(0);
+      buySpeed.disabled = state.coins < speedTiers.small.price;
+      buyLuck.disabled = state.coins < luckTiers.small.price;
+      buySpeedMid.disabled = state.coins < speedTiers.mid.price;
+      buySpeedBig.disabled = state.coins < speedTiers.big.price;
+      buyLuckMid.disabled = state.coins < luckTiers.mid.price;
+      buyLuckBig.disabled = state.coins < luckTiers.big.price;
+      }
+
+      function pickItem() {
+        // Tirage pondéré par 1/chanceDivisor
+        const weights = items.map(i => 1 / i.chanceDivisor);
+        const total = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * total;
+        for (let i = 0; i < items.length; i++) {
+          r -= weights[i];
+          if (r <= 0) return items[i];
+        }
+        return items[items.length - 1];
+      }
+
+      function luckFactorFor(rarity) {
+      if (!isLuckBuffActive()) return 1;
+      const tierKey = currentLuckTier();
+      const tier = luckTiers[tierKey] || luckTiers.small;
+      if (rarity.name === "Normal") return tier.norm;
+      return tier.other;
+      }
+
+      function pickRarity() {
+        const total = rarities.reduce((a, b) => a + b.weight, 0);
+        let r = Math.random() * total;
+        for (let i = 0; i < rarities.length; i++) {
+          const w = rarities[i].weight * luckFactorFor(rarities[i]);
+          r -= w;
+          if (r <= 0) return rarities[i];
+        }
+        return rarities[rarities.length - 1];
+      }
+
+      function scoreOf(result) {
+        // priorité sur la rareté, puis difficulté de l'item
+        return result.rarity.power * 100 + result.item.chanceDivisor;
+      }
+
+      function updateBest(result) {
+        const currentScore = state.bestScore || -1;
+        const newScore = scoreOf(result);
+        if (newScore > currentScore) {
+          state.bestItem = `${result.rarity.name} ${result.item.name}`;
+          state.bestScore = newScore;
+          bestEl.textContent = state.bestItem;
+        }
+      }
+
+      function combinedKey(result) {
+        return `${result.item.name}__${result.rarity.name}`;
+      }
+
+      function addToCollection(result) {
+        const key = combinedKey(result);
+        const firstTime = !state.collection[key];
+        state.collection[key] = (state.collection[key] || 0) + 1;
+        if (firstTime) updateGems(10); // bonus pour nouvelle découverte
+        updateBest(result);
+        recomputeCoinsPerSec();
+      updateVariantFilters();
+      renderCollection();
+      const tier = tierOf(result.item);
+      const label = `${result.rarity.name} ${result.item.name} [${tier.label}]`;
+      logEl.textContent = `Tu as obtenu: ${label}!` + (firstTime ? " (Nouveau +10 gems)" : "");
+        rollDisplay.classList.add("flash");
+        setTimeout(() => rollDisplay.classList.remove("flash"), 750);
+      }
+
+      function renderCollection(filter = state.currentVariantFilter || "Normal") {
+        collectionList.innerHTML = "";
+        const percents = normalizedPercentages();
+        const variantPercents = normalizedVariantPercentages();
+      const varUnlock = variantUnlockCounts();
+
+        // Grouper par item avec 4 colonnes
+        items.forEach(it => {
+          const pctItem = percents.find(p => p.name === it.name).pct;
+        const tier = tierOf(it);
+          const container = document.createElement("div");
+          container.className = "item-row";
+          container.innerHTML = `
+            <strong>${it.name}</strong>
+          <span class="tier-badge" style="background:${tier.color};">${tier.label}</span>
+            <span class="chance">Chance item: 1 sur ${it.chanceDivisor} (~${pctItem.toFixed(1)}%)</span>
+          `;
+
+          const variantsBox = document.createElement("div");
+          variantsBox.className = "variant-buttons";
+
+        rarities.forEach(r => {
+            const key = `${it.name}__${r.name}`;
+            const owned = state.collection[key] || 0;
+            const pctVar = variantPercents.find(v => v.name === r.name).pct;
+            if (filter && r.name !== filter) return;
+            const btn = document.createElement("button");
+            const rate = rateFor(it, r);
+          const lock = owned > 0 ? "🔓" : "🔒";
+          btn.textContent = `${lock} ${r.name} (${owned}) • ${rate}€/s`;
+            btn.style.background = r.color;
+            btn.onclick = () => {
+            logEl.textContent = `${r.name} ${it.name}: ${owned} obtenu(s) — variante ~${pctVar.toFixed(1)}% — ${rate}€/s si meilleur sur cet item`;
+            };
+            variantsBox.appendChild(btn);
+          });
+
+          container.appendChild(variantsBox);
+          collectionList.appendChild(container);
+        });
+      }
+
+      let rolling = false;
+      let rollInterval = null;
+
+    function isSpeedBuffActive() {
+      return Date.now() < state.buffSpeedUntil;
+    }
+
+    function isLuckBuffActive() {
+      return Date.now() < state.buffLuckUntil;
+    }
+
+    function currentSpeedTier() {
+      if (!isSpeedBuffActive()) return null;
+      return state.buffSpeedTier || "small";
+    }
+
+    function currentLuckTier() {
+      if (!isLuckBuffActive()) return null;
+      return state.buffLuckTier || "small";
+    }
+
+    function animateRoll(result, onDone) {
+      const names = items.flatMap(i => rarities.map(r => `${r.name} ${i.name}`));
+      const tierKey = currentSpeedTier();
+      const speed = tierKey ? speedTiers[tierKey] : null;
+      const duration = speed ? speed.anim : 1200;
+        const tick = 80;
+        let elapsed = 0;
+        rollDisplay.classList.remove("flash");
+      rollDisplay.style.color = "#a5b4fc";
+        clearInterval(rollInterval);
+        rollInterval = setInterval(() => {
+          elapsed += tick;
+          rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+          if (elapsed >= duration) {
+            clearInterval(rollInterval);
+          const tier = tierOf(result.item);
+          rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
+          rollDisplay.style.color = tier.color;
+            rollDisplay.classList.add("flash");
+            onDone();
+          }
+        }, tick);
+      }
+
+      function doRoll() {
+        if (rolling) return;
+        rolling = true;
+        const item = pickItem();
+        const rarity = pickRarity();
+        const result = { item, rarity };
+        rollBtn.disabled = true;
+        animateRoll(result, () => {
+          addToCollection(result);
+          rollBtn.disabled = false;
+          rolling = false;
+        });
+      }
+
+      rollBtn.onclick = doRoll;
+      skipBtn.onclick = () => {
+        // Placeholder : pourrait sauter l'animation si elle existait
+        logEl.textContent = "Skip utilisé (placeholder).";
+      };
+
+      autoBtn.onclick = () => {
+        if (state.autoTimer) {
+          clearInterval(state.autoTimer);
+          state.autoTimer = null;
+          autoBtn.textContent = "Auto Roll";
+          logEl.textContent = "Auto Roll arrêté.";
+        } else {
+        const tierKey = currentSpeedTier();
+        const speed = tierKey ? speedTiers[tierKey] : null;
+        const delay = speed ? speed.auto : 1400;
+          state.autoTimer = setInterval(doRoll, delay);
+          autoBtn.textContent = "Stop Auto";
+          logEl.textContent = "Auto Roll lancé.";
+        }
+      };
+
+      buyAuto.onclick = () => {
+        if (state.gems >= 100 && !state.autoPurchased) {
+          updateGems(-100);
+          state.autoPurchased = true;
+          autoBtn.disabled = false;
+          buyAuto.textContent = "Auto Roll acheté";
+          buyAuto.disabled = true;
+          logEl.textContent = "Auto Roll débloqué.";
+        }
+      };
+
+      buySkip.onclick = () => {
+        if (state.gems >= 500 && !state.skipPurchased) {
+          updateGems(-500);
+          state.skipPurchased = true;
+          skipBtn.disabled = false;
+          buySkip.textContent = "Skip Roll acheté";
+          buySkip.disabled = true;
+          logEl.textContent = "Skip Roll débloqué.";
+        }
+      };
+
+    function openCollection() {
+      updateVariantFilters();
+      renderCollection(state.currentVariantFilter || "Normal");
+      collectionPanel.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    }
+    function closeCollectionPanel() {
+      collectionPanel.style.display = "none";
+      document.body.style.overflow = "auto";
+    }
+
+    const btnCollection = document.getElementById("btnCollection");
+    const closeCollectionBtn = document.getElementById("closeCollection");
+    if (btnCollection) btnCollection.onclick = openCollection;
+    if (closeCollectionBtn) closeCollectionBtn.onclick = closeCollectionPanel;
+
+    // Fermer en cliquant sur le fond de la collection
+    collectionPanel.addEventListener("click", (e) => {
+      if (e.target === collectionPanel) {
+        closeCollectionPanel();
+      }
+    });
+
+      // Filtres de variantes
+      document.querySelectorAll(".variant-filter").forEach(btn => {
+        btn.onclick = () => {
+          const variant = btn.getAttribute("data-variant");
+          state.currentVariantFilter = variant;
+          renderCollection(variant);
+        };
+      });
+
+    function addBuffBadge(key, label, untilTs) {
+      // Unique par key (speed / luck). Accumule la durée si même key.
+      let div = Array.from(buffsEl.querySelectorAll(".buff")).find(b => b.dataset.key === key);
+      if (!div) {
+        div = document.createElement("div");
+        div.className = "buff";
+        div.dataset.key = key;
+        buffsEl.appendChild(div);
+      }
+      const currentUntil = Number(div.dataset.until) || 0;
+      const base = Math.max(currentUntil, Date.now());
+      const duration = untilTs - Date.now();
+      const newUntil = base + duration;
+      div.dataset.until = newUntil;
+      div.dataset.label = label;
+      div.textContent = label;
+    }
+
+    function refreshBuffBadges() {
+      const now = Date.now();
+      buffsEl.querySelectorAll(".buff").forEach(el => {
+        const until = Number(el.dataset.until);
+        const remaining = Math.max(0, until - now);
+        if (remaining <= 0) {
+          el.remove();
+        } else {
+          const mins = Math.floor(remaining / 60000);
+          const secs = Math.floor((remaining % 60000) / 1000);
+          el.textContent = `${el.dataset.label} (${mins}m${secs.toString().padStart(2, "0")}s)`;
+        }
+      });
+    }
+
+      setInterval(refreshBuffBadges, 1000);
+
+      document.getElementById("equipBest").onclick = () => {
+        if (!state.bestItem) {
+          logEl.textContent = "Rien à équiper pour l'instant.";
+        } else {
+          logEl.textContent = `Équipé: ${state.bestItem}.`;
+        }
+      };
+
+      const FIVE_MIN = 5 * 60 * 1000;
+
+      function spendCoins(amount) {
+        if (state.coins < amount) return false;
+        state.coins -= amount;
+        updateCoinsDisplay();
+        return true;
+      }
+
+    function applySpeedPotion(tierKey) {
+      const tier = speedTiers[tierKey];
+      if (!spendCoins(tier.price)) return;
+      const now = Date.now();
+      const sameTier = state.buffSpeedTier === tierKey && isSpeedBuffActive();
+      const base = sameTier ? Math.max(state.buffSpeedUntil, now) : now;
+      state.buffSpeedTier = tierKey;
+      state.buffSpeedUntil = base + FIVE_MIN;
+      addBuffBadge("speed", tier.label, state.buffSpeedUntil);
+      logEl.textContent = `${tier.label} activée (cumulable sur la même potion, remplace les autres).`;
+      if (state.autoTimer) {
+        clearInterval(state.autoTimer);
+        const speed = speedTiers[state.buffSpeedTier];
+        const delay = speed ? speed.auto : 1400;
+        state.autoTimer = setInterval(doRoll, delay);
+      }
+    }
+
+    function applyLuckPotion(tierKey) {
+      const tier = luckTiers[tierKey];
+      if (!spendCoins(tier.price)) return;
+      const now = Date.now();
+      const sameTier = state.buffLuckTier === tierKey && isLuckBuffActive();
+      const base = sameTier ? Math.max(state.buffLuckUntil, now) : now;
+      state.buffLuckTier = tierKey;
+      state.buffLuckUntil = base + FIVE_MIN;
+      addBuffBadge("luck", tier.label, state.buffLuckUntil);
+      logEl.textContent = `${tier.label} activée (cumulable sur la même potion, remplace les autres).`;
+    }
+
+    buySpeed.onclick = () => applySpeedPotion("small");
+    buySpeedMid.onclick = () => applySpeedPotion("mid");
+    buySpeedBig.onclick = () => applySpeedPotion("big");
+
+    buyLuck.onclick = () => applyLuckPotion("small");
+    buyLuckMid.onclick = () => applyLuckPotion("mid");
+    buyLuckBig.onclick = () => applyLuckPotion("big");
+
+      // Départ
+      recomputeCoinsPerSec();
+    updateVariantFilters();
+      renderCollection("Normal");
+      startCoinsTick();
+    </script>
+  </body>
+  </html>
+
