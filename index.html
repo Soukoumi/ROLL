@@ -177,9 +177,11 @@
         display: flex;
         gap: 10px;
         align-items: center;
+        z-index: 5;
       }
       .roll-area button {
         min-width: 120px;
+        pointer-events: auto;
       }
       .panel {
         position: fixed;
@@ -833,7 +835,10 @@
     }
 
     function animateRoll(result, onDone) {
-      if (!rollDisplay) return;
+      if (!rollDisplay) {
+        onDone();
+        return;
+      }
       const names = items.flatMap(i => rarities.map(r => `${r.name} ${i.name}`));
       const tierKey = currentSpeedTier();
       const speed = tierKey ? speedTiers[tierKey] : null;
@@ -845,33 +850,57 @@
       clearInterval(rollInterval);
       rollInterval = setInterval(() => {
         elapsed += tick;
-        rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+        if (rollDisplay) {
+          rollDisplay.textContent = names[Math.floor(Math.random() * names.length)];
+        }
         if (elapsed >= duration) {
           clearInterval(rollInterval);
-          const tier = tierOf(result.item);
-          rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
-          rollDisplay.style.color = tier.color;
-          onDone();
+          if (rollDisplay) {
+            const tier = tierOf(result.item);
+            rollDisplay.textContent = `${result.rarity.name} ${result.item.name}`;
+            rollDisplay.style.color = tier.color;
+          }
+          if (onDone) onDone();
         }
       }, tick);
     }
 
       function doRoll() {
         if (rolling) return;
-        rolling = true;
-        const item = pickItem();
-        const rarity = pickRarity();
-        currentRollResult = { item, rarity };
-        rollBtn.disabled = true;
-        animateRoll(currentRollResult, () => {
-          addToCollection(currentRollResult);
+        if (!rollBtn) return;
+        try {
+          rolling = true;
+          const item = pickItem();
+          const rarity = pickRarity();
+          currentRollResult = { item, rarity };
+          rollBtn.disabled = true;
+          animateRoll(currentRollResult, () => {
+            try {
+              addToCollection(currentRollResult);
+            } catch(e) {
+              console.error("Error adding to collection:", e);
+            }
+            rollBtn.disabled = false;
+            rolling = false;
+            currentRollResult = null;
+          });
+        } catch(e) {
+          console.error("Error in doRoll:", e);
           rollBtn.disabled = false;
           rolling = false;
           currentRollResult = null;
-        });
+        }
       }
 
-      rollBtn.onclick = doRoll;
+      if (rollBtn) {
+        rollBtn.addEventListener('click', doRoll);
+      } else {
+        console.error("rollBtn not found!");
+        setTimeout(() => {
+          const btn = document.getElementById("rollBtn");
+          if (btn) btn.addEventListener('click', doRoll);
+        }, 100);
+      }
       skipBtn.onclick = () => {
         if (!rolling || !rollInterval || !currentRollResult) return;
         clearInterval(rollInterval);
